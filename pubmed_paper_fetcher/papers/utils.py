@@ -3,49 +3,53 @@ import re
 def is_non_academic(affiliation: str) -> bool:
     """
     Heuristic to decide if affiliation is non-academic.
+    Looks for company-like keywords. Rejects common academic/hospital keywords.
     """
     academic_keywords = [
-        "university", "college", "school", "institute",
-        "department", "centre", "center", "faculty", "hospital"
+        "university", "institute", "college", "school",
+        "dept", "department", "faculty", "hospital", "centre", "center"
+    ]
+    non_academic_keywords = [
+        "inc", "ltd", "llc", "corp", "corporation",
+        "pharma", "biotech", "company", "technologies", "laboratories"
     ]
 
-    # if any academic word matches, treat as academic
-    affil_lower = affiliation.lower()
-    if any(word in affil_lower for word in academic_keywords):
+    text = affiliation.lower()
+
+    # If it has a clear company keyword → non-academic
+    if any(word in text for word in non_academic_keywords):
+        return True
+
+    # If it has an academic/hospital keyword → academic
+    if any(word in text for word in academic_keywords):
         return False
 
-    # if it has @, consider email => more likely non-academic
-    if "@" in affiliation:
-        return True
+    # If nothing matched → assume academic to be safe
+    return False
 
-    # fallback: if length is short, assume company name
-    if len(affiliation.split()) <= 5:
-        return True
-
-    # else treat as non-academic if no academic words found
-    return True
 
 def extract_emails(text: str):
     """
-    Extract email addresses from text.
+    Extract all email addresses from text.
     """
     return re.findall(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", text)
 
 
 def extract_companies(affiliation: str) -> str:
     """
-    Try to extract company name by removing academic keywords.
+    Try to extract a company name from the affiliation text.
+    Uses simple keyword heuristic: returns first matching part.
     """
-    academic_keywords = [
-        "university", "college", "school", "institute",
-        "department", "centre", "center", "faculty", "hospital"
+    non_academic_keywords = [
+        "inc", "ltd", "llc", "corp", "corporation",
+        "pharma", "biotech", "company", "technologies", "laboratories"
     ]
 
-    parts = [part.strip() for part in affiliation.split(",")]
-    company_parts = []
+    parts = [p.strip() for p in affiliation.split(",")]
 
     for part in parts:
-        if not any(word in part.lower() for word in academic_keywords):
-            company_parts.append(part)
+        text = part.lower()
+        if any(word in text for word in non_academic_keywords):
+            return part  # return matching chunk
 
-    return "; ".join(company_parts) if company_parts else "Not Found"
+    return "Not Found"
