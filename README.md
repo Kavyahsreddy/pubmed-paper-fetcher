@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # PubMed Paper Fetcher
 
 This tool fetches PubMed research papers based on a query and filters those with at least one non-academic author (e.g., from pharmaceutical or biotech companies).
@@ -12,3 +13,7 @@ Clone the repo:
 git clone <your-repo-url>
 cd pubmed-paper-fetcher
 poetry install
+=======
+# pubmed-paper-fetcher
+A CLI tool to fetch PubMed papers with company affiliations.
+>>>>>>> ae0648ab45efd4daa1dea021ab226285e70fea44
