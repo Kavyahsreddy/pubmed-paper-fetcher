@@ -14,9 +14,15 @@ def parse_xml(xml_data: str) -> List[Dict]:
         try:
             article_data = article["MedlineCitation"]
             article_info = article_data["Article"]
-            pubmed_id = article_data["PMID"]["#text"] if isinstance(article_data["PMID"], dict) else article_data["PMID"]
+            pubmed_id = (
+                article_data["PMID"]["#text"]
+                if isinstance(article_data["PMID"], dict)
+                else article_data["PMID"]
+            )
             title = article_info["ArticleTitle"]
-            date = article_info["Journal"]["JournalIssue"]["PubDate"].get("Year", "Unknown")
+            date = (
+                article_info["Journal"]["JournalIssue"]["PubDate"].get("Year", "Unknown")
+            )
             authors = article_info.get("AuthorList", {}).get("Author", [])
 
             if not isinstance(authors, list):
@@ -27,7 +33,13 @@ def parse_xml(xml_data: str) -> List[Dict]:
             emails = []
 
             for author in authors:
-                affiliation = author.get("AffiliationInfo", [{}])[0].get("Affiliation", "")
+                affiliation = author.get("AffiliationInfo", [{}])[0].get(
+                    "Affiliation", ""
+                )
+
+                # print affiliation for debug
+                print(f"DEBUG: Affiliation → {affiliation}")
+
                 if is_non_academic(affiliation):
                     name = f"{author.get('ForeName', '')} {author.get('LastName', '')}".strip()
                     non_academic_authors.append(name)
@@ -38,15 +50,20 @@ def parse_xml(xml_data: str) -> List[Dict]:
                         company_names.append(company)
 
             if non_academic_authors:
-                results.append({
-                    "PubmedID": pubmed_id,
-                    "Title": title,
-                    "Publication Date": date,
-                    "Non-academic Author(s)": "; ".join(non_academic_authors),
-                    "Company Affiliation(s)": "; ".join(set(company_names)) if company_names else "Not Found",
-                    "Corresponding Author Email": ", ".join(set(emails)) if emails else "Not Found"
-                })
+                results.append(
+                    {
+                        "PubmedID": pubmed_id,
+                        "Title": title,
+                        "Publication Date": date,
+                        "Non-academic Author(s)": "; ".join(non_academic_authors),
+                        "Company Affiliation(s)": "; ".join(set(company_names))
+                        if company_names
+                        else "Not Found",
+                        "Corresponding Author Email": ", ".join(set(emails))
+                        if emails
+                        else "Not Found",
+                    }
+                )
         except Exception:
             continue
-
     return results
