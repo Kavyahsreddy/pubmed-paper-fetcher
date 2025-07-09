@@ -34,21 +34,18 @@ def extract_emails(text: str):
 
 def extract_companies(affiliation: str) -> str:
     """
-    Try to extract company name heuristically.
+    Try to extract company name by removing academic keywords.
     """
-    company_keywords = [
-        "Inc", "Ltd", "LLC", "Corporation", "Corp", "Biotech",
-        "Pharma", "Technologies", "Labs", "Laboratories",
-        "Therapeutics", "Diagnostics", "Solutions", "Industries",
-        "Research", "Bio", "Genomics", "Biosciences",
-        "Life Sciences", "Medical", "Healthcare", "Systems"
+    academic_keywords = [
+        "university", "college", "school", "institute",
+        "department", "centre", "center", "faculty", "hospital"
     ]
 
     parts = [part.strip() for part in affiliation.split(",")]
+    company_parts = []
 
     for part in parts:
-        for keyword in company_keywords:
-            if keyword.lower() in part.lower():
-                return part
+        if not any(word in part.lower() for word in academic_keywords):
+            company_parts.append(part)
 
-    return ""
+    return "; ".join(company_parts) if company_parts else "Not Found"
