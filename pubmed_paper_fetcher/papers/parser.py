@@ -32,7 +32,10 @@ def parse_xml(xml_data: str) -> List[Dict]:
                     name = f"{author.get('ForeName', '')} {author.get('LastName', '')}".strip()
                     non_academic_authors.append(name)
                     emails += extract_emails(affiliation)
-                    company_names.append(extract_companies(affiliation))
+
+                    company = extract_companies(affiliation)
+                    if company:
+                        company_names.append(company)
 
             if non_academic_authors:
                 results.append({
@@ -40,9 +43,10 @@ def parse_xml(xml_data: str) -> List[Dict]:
                     "Title": title,
                     "Publication Date": date,
                     "Non-academic Author(s)": "; ".join(non_academic_authors),
-                    "Company Affiliation(s)": "; ".join(set(company_names)),
-                    "Corresponding Author Email": ", ".join(set(emails)) or "Not Found"
+                    "Company Affiliation(s)": "; ".join(set(company_names)) if company_names else "Not Found",
+                    "Corresponding Author Email": ", ".join(set(emails)) if emails else "Not Found"
                 })
         except Exception:
             continue
+
     return results
